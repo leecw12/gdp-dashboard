@@ -48,43 +48,6 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # 반경 설정
-    st.subheader("📏 반경 설정")
-    
-    # 세션 스테이트에 반경 저장
-    if 'radius_km' not in st.session_state:
-        st.session_state['radius_km'] = 1.0
-    
-    # 반경 선택 옵션 생성 (0.1 ~ 4.0, 0.1 단위)
-    radius_options = [round(x * 0.1, 1) for x in range(1, 41)]
-
-    # 기본 선택값 인덱스
-    default_index = radius_options.index(
-        st.session_state.get('radius_km', 1.0)
-    )
-
-    radius_km = st.selectbox(
-        "반경 (km)",
-        options=radius_options,
-        index=default_index,
-        key="radius_input"
-    )
-        
-    # 반경 값이 변경되었는지 확인
-    if radius_km != st.session_state.get('radius_km'):
-        st.session_state['radius_km'] = radius_km
-        st.session_state['radius_changed'] = True
-    
-    radius_m = radius_km * 1000
-    st.info(f"반경: {radius_km}km ({radius_m:,.0f}m)")
-    
-    # 반경 업데이트 버튼
-    if st.button("🔄 반경 적용", use_container_width=True):
-        st.session_state['radius_changed'] = True
-        st.rerun()
-    
-    st.markdown("---")
-    
     # 원 스타일 설정
     st.subheader("🎨 스타일 설정")
     circle_color = st.color_picker("원 색상", "#FF0000")
@@ -231,7 +194,7 @@ map_html = f"""
             circle = new google.maps.Circle({{
                 map: map,
                 center: center,
-                radius: {radius_m},
+                radius: {st.session_state['radius_km'] * 1000},
                 strokeColor: '{circle_color}',
                 strokeOpacity: {stroke_opacity},
                 strokeWeight: 2,
@@ -250,7 +213,7 @@ map_html = f"""
                         <strong>중심점</strong>
                         <div>위도: {latitude}</div>
                         <div>경도: {longitude}</div>
-                        <div>반경: {radius_km}km</div>
+                        <div>반경: {st.session_state['radius_km']}km</div>
                     </div>
                 `);
                 infoWindow.open(map, marker);
@@ -278,9 +241,9 @@ map_html = f"""
                 updateCenter(new google.maps.LatLng({latitude}, {longitude}));
             }} else if (radiusChanged) {{
                 // 반경만 변경된 경우 - 모든 원의 반경 업데이트
-                circle.setRadius({radius_m});
-                searchCircles.forEach(c => c.setRadius({radius_m}));
-                console.log('반경 업데이트:', {radius_km}, 'km');
+                circle.setRadius({st.session_state['radius_km'] * 1000});
+                searchCircles.forEach(c => c.setRadius({st.session_state['radius_km'] * 1000}));
+                console.log('반경 업데이트:', {st.session_state['radius_km']}, 'km');
             }}
             
             console.log('✅ 지도 로드 성공!');
@@ -299,7 +262,7 @@ map_html = f"""
                     <div>위도: ${{position.lat().toFixed(6)}}</div>
                     <div>경도: ${{position.lng().toFixed(6)}}</div>
                     <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
-                        🔵 반경: {radius_km}km
+                        🔵 반경: {st.session_state['radius_km']}km
                     </div>
                 </div>
             `);
@@ -366,7 +329,7 @@ map_html = f"""
                             }}
                             
                             content += `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
-                                <div style="font-size: 14px; color: #1a73e8; font-weight: bold;">🔵 반경: {radius_km}km</div>
+                                <div style="font-size: 14px; color: #1a73e8; font-weight: bold;">🔵 반경: {st.session_state['radius_km']}km</div>
                                 <div style="font-size: 12px; color: #666; margin-top: 3px;">반경 내 영역이 표시됩니다</div>
                             </div></div>`;
                             
@@ -429,7 +392,7 @@ map_html = f"""
                         const searchCircle = new google.maps.Circle({{
                             map: map,
                             center: place.geometry.location,
-                            radius: {radius_m},
+                            radius: {st.session_state['radius_km'] * 1000},
                             strokeColor: index === 0 ? '{circle_color}' : '#4285F4',
                             strokeOpacity: {stroke_opacity} * 0.6,
                             strokeWeight: index === 0 ? 2 : 1,
@@ -454,7 +417,7 @@ map_html = f"""
                                     <div class="address">📍 ${{place.formatted_address || '주소 정보 없음'}}</div>
                                     ${{place.rating ? `<div>⭐ ${{place.rating}}</div>` : ''}}
                                     <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
-                                        🔵 반경: {radius_km}km
+                                        🔵 반경: {st.session_state['radius_km']}km
                                     </div>
                                     <div style="margin-top: 5px; font-size: 12px; color: #666;">
                                         총 ${{results.length}}개 결과 중 ${{index + 1}}번
@@ -474,7 +437,7 @@ map_html = f"""
                             <div class="address">📍 ${{results[0].formatted_address || '주소 정보 없음'}}</div>
                             ${{results[0].rating ? `<div>⭐ ${{results[0].rating}}</div>` : ''}}
                             <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
-                                🔵 반경: {radius_km}km
+                                🔵 반경: {st.session_state['radius_km']}km
                             </div>
                             <div style="margin-top: 5px; font-size: 12px; color: #666;">
                                 총 ${{results.length}}개 결과 (각 위치마다 반경 표시)
@@ -519,6 +482,42 @@ if st.session_state.get('radius_changed', False):
 # HTML 렌더링
 components.html(map_html, height=650)
 
+# 반경 설정 (지도 바로 아래로 이동)
+st.markdown("---")
+st.subheader("📏 반경 설정")
+
+col1, col2, col3 = st.columns([2, 2, 1])
+
+with col1:
+    # 반경 선택 옵션 생성 (0.1 ~ 4.0, 0.1 단위)
+    radius_options = [round(x * 0.1, 1) for x in range(1, 41)]
+    
+    # 기본 선택값 인덱스
+    default_index = radius_options.index(
+        st.session_state.get('radius_km', 1.0)
+    )
+    
+    radius_km = st.selectbox(
+        "반경 (km)",
+        options=radius_options,
+        index=default_index,
+        key="radius_input"
+    )
+    
+    # 반경 값이 변경되었는지 확인
+    if radius_km != st.session_state.get('radius_km'):
+        st.session_state['radius_km'] = radius_km
+        st.session_state['radius_changed'] = True
+
+with col2:
+    radius_m = radius_km * 1000
+    st.info(f"반경: {radius_km}km ({radius_m:,.0f}m)")
+
+with col3:
+    # 반경 업데이트 버튼
+    if st.button("🔄 반경 적용", use_container_width=True, type="primary"):
+        st.session_state['radius_changed'] = True
+        st.rerun()
 
 # 하단 정보 표시
 st.markdown("---")
