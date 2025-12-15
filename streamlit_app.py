@@ -519,21 +519,6 @@ if st.session_state.get('radius_changed', False):
 # HTML 렌더링
 components.html(map_html, height=650)
 
-if st.session_state.get("custom_text"):
-    st.markdown(
-        f"""
-        <div style="
-            margin-top: 10px;
-            padding: 12px;
-            background-color: #f9f9f9;
-            border-left: 4px solid #1a73e8;
-            font-size: 14px;
-        ">
-            {st.session_state["custom_text"]}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
 
 # 하단 정보 표시
 st.markdown("---")
