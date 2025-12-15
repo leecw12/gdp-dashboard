@@ -55,16 +55,21 @@ with st.sidebar:
     if 'radius_km' not in st.session_state:
         st.session_state['radius_km'] = 1.0
     
-    radius_km = st.number_input(
+    # 반경 선택 옵션 생성 (0.1 ~ 4.0, 0.1 단위)
+    radius_options = [round(x * 0.1, 1) for x in range(1, 41)]
+
+    # 기본 선택값 인덱스
+    default_index = radius_options.index(
+        st.session_state.get('radius_km', 1.0)
+    )
+
+    radius_km = st.selectbox(
         "반경 (km)",
-        min_value=0.1,
-        max_value=50.0,
-        value=st.session_state.get('radius_km', 1.0),
-        step=0.1,
-        format="%.1f",
+        options=radius_options,
+        index=default_index,
         key="radius_input"
     )
-    
+        
     # 반경 값이 변경되었는지 확인
     if radius_km != st.session_state.get('radius_km'):
         st.session_state['radius_km'] = radius_km
